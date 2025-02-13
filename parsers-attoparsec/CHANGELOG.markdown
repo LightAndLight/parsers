@@ -1,3 +1,7 @@
+1.0.0 [2025.02.13]
+------------------
+* Factor out instances into separate modules
+
 0.12.12 [2024.10.26]
 --------------------
 * Support building with `text-2.1.2`.
