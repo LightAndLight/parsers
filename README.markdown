@@ -1,31 +1,27 @@
 parsers
-=======
+-------
 
-[![Hackage](https://img.shields.io/hackage/v/parsers.svg)](https://hackage.haskell.org/package/parsers) [![Build Status](https://github.com/ekmett/parsers/workflows/Haskell-CI/badge.svg)](https://github.com/ekmett/parsers/actions?query=workflow%3AHaskell-CI)
+Motivation
+----------
 
-Goals
------
+This repository is a fork of Ed Kmett's [`parsers`](https://github.com/ekmett/parsers) package.
 
-This project provides convenient combinators for working with and building parsing combinator libraries.
+The fork moves the type class instances for `attoparsec` and `parsec` into separate packages.
+This makes the `parsers` package more modular.
 
-Given a few simple instances, you get access to a large number of canned definitions.
+The original `parsers` package depends on `attoparsec` and `parsec` by default.
+If you use `parsers` to write a parser that you only run via `attoparsec`, then your project will still depend on `parsers`, which has become a spurious dependency for your program and potentially its dependents.
+Additionally, if you depend on `parsers` in order to write instances for a new parser combinator library (like I did for [`sage`](https://github.com/LightAndLight/sage)), then you will transitively depend on both `attoparsec` and `parsec`.
 
-Structure
----------
+The original `parsec` package has flags that can disable the `attoparsec` and `parsec`, but using flags for this doesn't work out in general[^1].
+Library authors would need to be able to set flags for their dependencies, and `cabal-install` would have to coherently combine flags that were set by different dependencies.
+Sounds pretty complex, and `cabal-install` doesn't need more complexity.
 
-The `parsers` ecosystem is split into several packages:
+Factoring out type class instances into separate packages (`parsers` -> `{parsers,parsers-attoparsec,parsers-parsec}`) returns some agency to library authors.
+Instead of using flags to choose their parser combinator dependencies, they explicitly depend on instances via a `parsers-*` package.
+These "instances packages" preserve type class coherency by avoiding orphan instances;
+the `parsers` type class instances are given for a newtype over a concrete parser.
 
-* `parsers`: Core package with parser abstractions and instances for base's `ReadP`
-* `parsers-attoparsec`: Instances for the `attoparsec` library
-* `parsers-binary`: Instances for `binary`'s `Get` parser
-* `parsers-parsec`: Instances for the `parsec` library
-
-Contact Information
--------------------
-
-Contributions and bug reports are welcome!
-
-Please feel free to contact me through github or on the #haskell IRC channel on irc.freenode.net.
-
--Edward Kmett
-
+[^1]: Relevant discussions:
+    * <https://github.com/haskell/cabal/issues/2821>
+    * <https://github.com/haskell/cabal/issues/8643>
