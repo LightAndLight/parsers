@@ -6,9 +6,19 @@ parsers
 Goals
 -----
 
-This library provides convenient combinators for working with and building parsing combinator libraries.
+This project provides convenient combinators for working with and building parsing combinator libraries.
 
 Given a few simple instances, you get access to a large number of canned definitions.
+
+Structure
+---------
+
+The `parsers` ecosystem is split into several packages:
+
+* `parsers`: Core package with parser abstractions and instances for base's `ReadP`
+* `parsers-attoparsec`: Instances for the `attoparsec` library
+* `parsers-binary`: Instances for `binary`'s `Get` parser
+* `parsers-parsec`: Instances for the `parsec` library
 
 Contact Information
 -------------------

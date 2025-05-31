@@ -1,3 +1,11 @@
+0.13.0 [unreleased]
+------------------
+* Split package into multiple packages to avoid unnecessary dependencies:
+  * `parsers`: Core package with parser abstractions and instances for base's `ReadP`
+  * `parsers-parsec`: Instances for the `parsec` library
+  * `parsers-attoparsec`: Instances for the `attoparsec` library
+  * `parsers-binary`: Instances for `binary`'s `Get` parser
+
 0.12.12 [2024.10.26]
 --------------------
 * Support building with `text-2.1.2`.

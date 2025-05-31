@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
@@ -62,21 +61,7 @@ import qualified Data.Foldable as F
 import qualified Data.List.NonEmpty as NonEmpty
 import Data.List.NonEmpty (NonEmpty(..))
 
-#ifdef MIN_VERSION_parsec
-import qualified Text.Parsec as Parsec
-#endif
-
-#ifdef MIN_VERSION_attoparsec
-import qualified Data.Attoparsec.Types as Att
-import qualified Data.Attoparsec.Combinator as Att
-#endif
-
 import qualified Text.ParserCombinators.ReadP as ReadP
-
-#ifdef MIN_VERSION_binary
-import Control.Monad (when, unless)
-import qualified Data.Binary.Get as B
-#endif
 
 -- | @choice ps@ tries to apply the parsers in the list @ps@ in order,
 -- until one of them succeeds. Returns the value of the succeeding
@@ -402,39 +387,6 @@ instance (Parsing m, Monad m) => Parsing (IdentityT m) where
   notFollowedBy (IdentityT m) = IdentityT $ notFollowedBy m
   {-# INLINE notFollowedBy #-}
 
-#ifdef MIN_VERSION_parsec
-instance (Parsec.Stream s m t, Show t) => Parsing (Parsec.ParsecT s u m) where
-  try           = Parsec.try
-  (<?>)         = (Parsec.<?>)
-  skipMany      = Parsec.skipMany
-  skipSome      = Parsec.skipMany1
-  unexpected    = Parsec.unexpected
-  eof           = Parsec.eof
-  notFollowedBy = Parsec.notFollowedBy
-#endif
-
-#ifdef MIN_VERSION_attoparsec
-instance Att.Chunk t => Parsing (Att.Parser t) where
-  try             = Att.try
-  (<?>)           = (Att.<?>)
-  skipMany        = Att.skipMany
-  skipSome        = Att.skipMany1
-  unexpected      = fail
-  eof             = Att.endOfInput
-  notFollowedBy p = optional p >>= maybe (pure ()) (unexpected . show)
-#endif
-
-#ifdef MIN_VERSION_binary
-instance Parsing B.Get where
-  try             = id
-  (<?>)           = flip B.label
-  skipMany p      = do skipped <- True <$ p <|> pure False
-                       when skipped $ skipMany p
-  unexpected      = fail
-  eof             = do isEof <- B.isEmpty
-                       unless isEof $ fail "Parsing.eof"
-  notFollowedBy p = optional p >>= maybe (pure ()) (unexpected . show)
-#endif
 
 instance Parsing ReadP.ReadP where
   try        = id

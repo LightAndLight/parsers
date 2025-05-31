@@ -1,26 +1,17 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE CPP #-}
 
 module Main
 ( main
 ) where
 
 import Control.Applicative
-
-#ifdef MIN_VERSION_attoparsec
-import Data.Attoparsec.Text (parseOnly)
-#endif
 import Data.Either
-import Data.String
 
 import Test.QuickCheck
 import Test.QuickCheck.Instances ()
 
-#ifdef MIN_VERSION_parsec
-import Text.Parsec.Prim as P (parse)
-#endif
 import Text.Parser.Char
 import Text.Parser.Combinators
 import Text.ParserCombinators.ReadP (readP_to_S)
@@ -28,10 +19,7 @@ import Text.ParserCombinators.ReadP (readP_to_S)
 import System.Exit
 
 -- -------------------------------------------------------------------------- --
--- Run tests with different parser frameworks
-
--- Instead of letting quick check pick the parser framework as a test parameter
--- it may be better to just run all tests for each parser framework.
+-- Run tests with the ReadP parser
 
 newtype P a = P (forall m. (Monad m, CharParsing m) => m a)
 
@@ -39,31 +27,13 @@ data TestParser a = TestParser String (P a -> String -> Either String a)
 
 instance Show (TestParser a) where show (TestParser n _) = n
 
-#ifdef MIN_VERSION_attoparsec
-pAtto :: TestParser a
-pAtto = TestParser "attoparsec" $ \(P p) -> parseOnly p . fromString
-#endif
-
-#ifdef MIN_VERSION_parsec
-pParsec :: TestParser a
-pParsec = TestParser "parsec" $ \(P p) -> either (Left . show) Right . parse p "test input"
-#endif
-
 pReadP :: TestParser a
 pReadP = TestParser "ReadP" $ \(P p) s -> case readP_to_S p s of
   [] -> Left "parseFailed"
   (a,_):_ -> Right a
 
 instance Arbitrary (TestParser a) where
-    arbitrary = elements ps
-        where
-            ps = [pReadP]
-#ifdef MIN_VERSION_attoparsec
-              ++ [pAtto]
-#endif
-#ifdef MIN_VERSION_parsec
-              ++ [pParsec]
-#endif
+    arbitrary = elements [pReadP]
 
 -- -------------------------------------------------------------------------- --
 -- Main

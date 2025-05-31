@@ -1,1 +1,5 @@
-packages: .
+packages:
+  ./parsers
+  ./parsers-attoparsec
+  ./parsers-binary
+  ./parsers-parsec

@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE TypeFamilies #-}
 
@@ -31,19 +30,6 @@ import Control.Monad.Trans.Reader
 import Control.Monad.Trans.Identity
 import qualified Text.ParserCombinators.ReadP as ReadP
 import Text.Parser.Combinators
-
-#ifdef MIN_VERSION_parsec
-import qualified Text.Parsec as Parsec
-#endif
-
-#ifdef MIN_VERSION_attoparsec
-import qualified Data.Attoparsec.Types as Att
-import qualified Data.Attoparsec.Combinator as Att
-#endif
-
-#ifdef MIN_VERSION_binary
-import qualified Data.Binary.Get as B
-#endif
 
 -- | Additional functionality needed to describe parsers independent of input type.
 class Parsing m => LookAheadParsing m where
@@ -82,20 +68,6 @@ instance (LookAheadParsing m, Monad m) => LookAheadParsing (IdentityT m) where
   lookAhead = IdentityT . lookAhead . runIdentityT
   {-# INLINE lookAhead #-}
 
-#ifdef MIN_VERSION_parsec
-instance (Parsec.Stream s m t, Show t) => LookAheadParsing (Parsec.ParsecT s u m) where
-  lookAhead = Parsec.lookAhead
-#endif
-
-#ifdef MIN_VERSION_attoparsec
-instance Att.Chunk i => LookAheadParsing (Att.Parser i) where
-  lookAhead = Att.lookAhead
-#endif
-
-#ifdef MIN_VERSION_binary
-instance LookAheadParsing B.Get where
-  lookAhead = B.lookAhead
-#endif
 
 instance LookAheadParsing ReadP.ReadP where
   lookAhead p = ReadP.look >>= \s ->
